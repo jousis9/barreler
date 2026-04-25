@@ -40,14 +40,11 @@ class Barrel extends Equatable {
     );
   }
 
-  String get barrelFile =>
-      dirSettings.barrelFile(baseSettings.defaultSettings.fileName);
+  String get barrelFile => dirSettings.barrelFile(baseSettings.defaultSettings.fileName);
 
   /// Find dart files without settings file
   Iterable<String> findFiles() sync* {
-    final files = fs
-        .directory(dirSettings.dirPath)
-        .listSync(recursive: true, followLinks: false);
+    final files = fs.directory(dirSettings.dirPath).listSync(recursive: true, followLinks: false);
 
     for (final file in files) {
       if (file is! File) continue;
@@ -62,10 +59,7 @@ class Barrel extends Equatable {
 
   /// Filter [files]  and [dirSettings] filters
   Iterable<String> filterFiles(Iterable<String> files) sync* {
-    final include = [
-      ...baseSettings.include,
-      ...dirSettings.include.map((e) => e.export)
-    ];
+    final include = [...baseSettings.include, ...dirSettings.include.map((e) => e.export)];
     final exclude = [...baseSettings.exclude, ...dirSettings.exclude];
 
     logger.detail('Include: $include');
@@ -93,8 +87,7 @@ class Barrel extends Equatable {
         continue;
       }
 
-      final isExcluded =
-          exclude.any((f) => Glob(f).matches(file) || file.endsWith(f));
+      final isExcluded = exclude.any((f) => Glob(f).matches(file) || file.endsWith(f));
       if (isExcluded) {
         continue;
       }
@@ -162,20 +155,16 @@ class Barrel extends Equatable {
     );
 
     final disclaimer = baseSettings.defaultSettings.disclaimer.removeWrapping();
-    final comments =
-        (dirSettings.comments ?? baseSettings.defaultSettings.comments ?? '')
-            .removeWrapping();
+    final comments = (dirSettings.comments ?? baseSettings.defaultSettings.comments ?? '').removeWrapping();
 
-    final externalExports = dirSettings.exports.map((e) => e.toCode()).toList()
-      ..sort();
+    final externalExports = dirSettings.exports.map((e) => e.toCode()).toList()..sort();
 
     final internalFiles = findFiles();
     logger.detail('Found ${internalFiles.length} files');
 
     final internalFilteredFiles = filterFiles(internalFiles);
 
-    logger.detail(
-        'Exporting ${internalFilteredFiles.length} files (after filtering)');
+    logger.detail('Exporting ${internalFilteredFiles.length} files (after filtering)');
 
     final internalExports = exports(internalFilteredFiles).toList()..sort();
 
@@ -193,7 +182,7 @@ class Barrel extends Equatable {
     }
 
     final barrelContent = formatter.format(
-      generated.join(baseSettings.lineBreak),
+      generated.map((line) => line.replaceAll('\\', '/')).join(baseSettings.lineBreak),
     );
 
     if (!allowChange) {
